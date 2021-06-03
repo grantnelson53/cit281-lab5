@@ -1,37 +1,97 @@
-## Welcome to GitHub Pages
+## Lab 5
 
-You can use the [editor on GitHub](https://github.com/grantnelson53/cit281-lab5/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+In this lab, we continued our knowledge about Fastify and used client-server communication
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Source Code
 
-### Markdown
+    // Require the Fastify framework and instantiate it
+    const fastify = require("fastify")();
+    // Handle GET verb for / route using Fastify
+    // Note use of "chain" dot notation syntax
+    const students = [
+      {
+        id: 1,
+        last: "Last1",
+        first: "First1",
+      },
+      {
+        id: 2,
+        last: "Last2",
+        first: "First2",
+      },
+      {
+        id: 3,
+        last: "Last3",
+        first: "First3",
+      },
+    ];
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+    //Student Route 
+    fastify.get("/cit/student", (request, reply) => {
+      reply
+        .code(200)
+        .header("Content-Type", "application/json; charset=utf-8")
+        .send(students);
+    });
 
-```markdown
-Syntax highlighted code block
+    //Student ID Route
+    fastify.get("/cit/student/:id", (request, reply) => {
+        console.log(request);
 
-# Header 1
-## Header 2
-### Header 3
+        let studentIDFromClient = request.params.id;
+        console.log(studentIDFromClient);
 
-- Bulleted
-- List
+        let studentRequestedFromClientID = null;
 
-1. Numbered
-2. List
+        for (studentInArray of students) {
+            if (studentInArray.id == studentIDFromClient) {
+                studentRequestedFromClientID = studentInArray;
+                break;
+            }
+        }
+     if (studentRequestedFromClientID != null) {
+      reply
+        .code(200)
+        .header("Content-Type", "application/json; charset=utf-8")
+        .send(studentRequestedFromClientID);
+        }
+    else {
+          reply
+            .code(404)
+            .header("Content-Type", "text/html; charset=utf-8")
+            .send("<h1>404 Not Found</h1>");
+        }
+    });
 
-**Bold** and _Italic_ and `Code` text
+    //Unmatched Route
+    fastify.get("*", (request, reply) => {
+      reply
+        .code(200)
+        .header("Content-Type", "text/html; charset=utf-8")
+        .send("<h1>404 Not Found</h1>");
+    });
 
-[Link](url) and ![Image](src)
-```
+    //Add  Studnet Route
+    fastify.post("/cit/student/add", (request, reply) => {
+        console.log(request);
+        let userData = JSON.parse(request.body)
+        console.log(userData);
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+      reply
+        .code(200)
+        .header("Content-Type", "application/json; charset=utf-8")
+        .send("<h1>At 'ADD STUDENT' Route</h1>");
+    });
 
-### Jekyll Themes
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/grantnelson53/cit281-lab5/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+    // Start server and listen to requests using Fastify
+    const listenIP = "localhost";
+    const listenPort = 8080;
+    fastify.listen(listenPort, listenIP, (err, address) => {
+      if (err) {
+        console.log(err);
+        process.exit(1);
+      }
+      console.log(`Server listening on ${address}`);
+    });
